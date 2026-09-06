@@ -28,14 +28,6 @@ body.dark{--bg:#0f1320;--card:#171d2d;--text:#f1f4ff;--muted:#9da7bc;--line:#283
 .modal{display:none;position:fixed;inset:0;background:#0008;z-index:20;padding:20px}.modalbox{max-width:700px;max-height:90vh;overflow:auto;margin:5vh auto;background:var(--card);color:var(--text);border-radius:20px;padding:22px}
 .close{float:right;background:#eee;color:#333}.chapters{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}.chapter{padding:13px;border:1px solid var(--line);border-radius:12px}
 </style>
-
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#4f46e5">
-<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Study Hub">
-
 </head>
 <body>
 <header><div class="logo">📚 Class 10 <span>Study Hub</span></div><button class="toggle" onclick="toggleTheme()">🌙 Theme</button></header>
@@ -99,35 +91,5 @@ function resetTimer(){pauseTimer();seconds=1500;drawTime()}
 const subjectsEl=document.getElementById("subjects"),mathsEl=document.getElementById("maths"),overallBar=document.getElementById("overallBar"),overallText=document.getElementById("overallText"),time=document.getElementById("time"),search=document.getElementById("search"),modal=document.getElementById("modal"),modalContent=document.getElementById("modalContent");
 render();drawTime();
 </script>
-
-<div id="pwaInstallBar" style="display:none;position:fixed;left:12px;right:12px;bottom:12px;z-index:9999;padding:12px 14px;border-radius:16px;background:#111827;color:#fff;box-shadow:0 8px 30px rgba(0,0,0,.25);align-items:center;justify-content:space-between;gap:12px;font-family:system-ui,sans-serif">
-  <div><b>📱 Install Study Hub</b><div style="font-size:12px;opacity:.8">Home screen par app jaisa use karein</div></div>
-  <button id="pwaInstallBtn" style="border:0;border-radius:10px;padding:10px 14px;font-weight:700;background:#fff;color:#111827">Install</button>
-</div>
-<script>
-(function(){
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", function(){ navigator.serviceWorker.register("./sw.js").catch(function(){}); });
-  }
-  let deferredPrompt = null;
-  const bar = document.getElementById("pwaInstallBar");
-  const btn = document.getElementById("pwaInstallBtn");
-  window.addEventListener("beforeinstallprompt", function(e){
-    e.preventDefault(); deferredPrompt = e;
-    if (bar) bar.style.display = "flex";
-  });
-  if (btn) btn.addEventListener("click", async function(){
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    try { await deferredPrompt.userChoice; } catch(e) {}
-    deferredPrompt = null;
-    if (bar) bar.style.display = "none";
-  });
-  window.addEventListener("appinstalled", function(){
-    if (bar) bar.style.display = "none";
-  });
-})();
-</script>
-
 </body>
 </html>
