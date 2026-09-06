@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Class 10 Study Hub</title>
+<style>
+:root{--bg:#f6f8ff;--card:#fff;--text:#172033;--muted:#687086;--primary:#5b5cf0;--line:#e6e9f2}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--text)}
+header{position:sticky;top:0;z-index:5;background:var(--card);border-bottom:1px solid var(--line);padding:14px 5%;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.logo{font-weight:800;font-size:20px}.logo span{color:var(--primary)}
+button{border:0;border-radius:12px;padding:10px 14px;cursor:pointer;font-weight:700}
+.toggle{background:#eef0ff;color:var(--primary)}
+main{max-width:1100px;margin:auto;padding:28px 5%}
+.hero{background:linear-gradient(135deg,#5b5cf0,#8d65f5);color:white;border-radius:24px;padding:28px;margin-bottom:22px}
+.hero h1{margin:0 0 8px;font-size:clamp(28px,6vw,44px)}.hero p{margin:0 0 18px;opacity:.9}
+.search{width:100%;padding:15px 18px;border:1px solid var(--line);border-radius:15px;font-size:16px;background:var(--card);color:var(--text)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin:20px 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 5px 18px #1b245008}
+.card h3{margin:8px 0 5px}.muted{color:var(--muted);font-size:14px}
+.icon{font-size:30px}.progress{height:9px;background:#e9ebf3;border-radius:99px;overflow:hidden}.bar{height:100%;background:var(--primary);width:0}
+.section-title{display:flex;justify-content:space-between;align-items:center;margin-top:28px}
+.timer{text-align:center}.time{font-size:48px;font-weight:800;margin:12px}
+.timer button{margin:3px;background:#eef0ff;color:var(--primary)}
+footer{text-align:center;padding:30px;color:var(--muted)}
+body.dark{--bg:#0f1320;--card:#171d2d;--text:#f1f4ff;--muted:#9da7bc;--line:#283047}
+.subject{cursor:pointer;transition:.15s}.subject:hover{transform:translateY(-2px)}
+.modal{display:none;position:fixed;inset:0;background:#0008;z-index:20;padding:20px}.modalbox{max-width:700px;max-height:90vh;overflow:auto;margin:5vh auto;background:var(--card);color:var(--text);border-radius:20px;padding:22px}
+.close{float:right;background:#eee;color:#333}.chapters{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}.chapter{padding:13px;border:1px solid var(--line);border-radius:12px}
+</style>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#4f46e5">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Study Hub">
+
+</head>
+<body>
+<header><div class="logo">📚 Class 10 <span>Study Hub</span></div><button class="toggle" onclick="toggleTheme()">🌙 Theme</button></header>
+<main>
+<section class="hero">
+<h1>Study Smart. Score Better. 🚀</h1>
+<p>Your simple Class 10 CBSE study dashboard.</p>
+<input id="search" class="search" placeholder="🔍 Search subjects or Maths chapters..." oninput="searchItems()">
+</section>
+
+<div class="grid">
+<div class="card"><div class="icon">📈</div><h3>Overall Progress</h3><div class="progress"><div id="overallBar" class="bar"></div></div><p id="overallText" class="muted">0% completed</p></div>
+<div class="card timer"><div class="icon">⏱️</div><h3>Study Timer</h3><div id="time" class="time">25:00</div><button onclick="startTimer()">Start</button><button onclick="pauseTimer()">Pause</button><button onclick="resetTimer()">Reset</button></div>
+<div class="card"><div class="icon">⭐</div><h3>Today's Target</h3><p class="muted">Complete 2 focused study sessions + revise formulas.</p><button onclick="setTarget()">Mark Done</button></div>
+</div>
+
+<div class="section-title"><h2>📚 Subjects</h2></div>
+<div id="subjects" class="grid"></div>
+
+<div class="section-title"><h2>🧮 Maths – 14 Chapters</h2></div>
+<div id="maths" class="grid"></div>
+</main>
+<footer>Class 10 Study Hub • Version 1 • Your personal study space ❤️</footer>
+
+<div id="modal" class="modal" onclick="if(event.target===this)closeModal()"><div class="modalbox"><button class="close" onclick="closeModal()">✕</button><div id="modalContent"></div></div></div>
+
+<script>
+const subjects=[
+["🧮","Mathematics","14 chapters","maths"],
+["🔬","Science","Physics • Chemistry • Biology","science"],
+["🌍","Social Science","History • Geography • Civics • Economics","sst"],
+["📖","English","Literature • Grammar • Writing","english"],
+["🪔","Hindi","Literature • Grammar • Writing","hindi"],
+["💻","Information Technology","Employability • Subject Skills","it"]
+];
+const maths=[
+"Real Numbers","Polynomials","Pair of Linear Equations in Two Variables","Quadratic Equations",
+"Arithmetic Progressions","Triangles","Coordinate Geometry","Introduction to Trigonometry",
+"Some Applications of Trigonometry","Circles","Areas Related to Circles","Surface Areas and Volumes",
+"Statistics","Probability"];
+let completed=JSON.parse(localStorage.getItem("completed")||"{}");
+
+function render(){
+ subjectsEl.innerHTML=subjects.map(s=>`<div class="card subject" data-name="${s[1].toLowerCase()}" onclick="openSubject('${s[3]}')"><div class="icon">${s[0]}</div><h3>${s[1]}</h3><p class="muted">${s[2]}</p></div>`).join("");
+ mathsEl.innerHTML=maths.map((m,i)=>`<div class="card subject mathitem" data-name="${m.toLowerCase()}"><div class="icon">📘</div><h3>Chapter ${i+1}</h3><p>${m}</p><label class="muted"><input type="checkbox" ${completed[i]?'checked':''} onchange="mark(${i},this.checked)"> Completed</label></div>`).join("");
+ updateProgress();
+}
+function mark(i,v){completed[i]=v;localStorage.setItem("completed",JSON.stringify(completed));updateProgress()}
+function updateProgress(){let n=Object.values(completed).filter(Boolean).length,p=Math.round(n/14*100);overallBar.style.width=p+"%";overallText.textContent=p+"% Maths completed ("+n+"/14 chapters)"}
+function searchItems(){let q=search.value.toLowerCase();document.querySelectorAll(".subject,.mathitem").forEach(x=>x.style.display=x.dataset.name.includes(q)?"block":"none")}
+function toggleTheme(){document.body.classList.toggle("dark");localStorage.setItem("dark",document.body.classList.contains("dark"))}
+if(localStorage.getItem("dark")==="true")document.body.classList.add("dark");
+function openSubject(type){let s=subjects.find(x=>x[3]===type);modal.style.display="block";modalContent.innerHTML=`<h2>${s[0]} ${s[1]}</h2><p class="muted">${s[2]}</p><hr><h3>Coming in Version 2 🚀</h3><p>Chapter-wise notes, formulas, important questions, practice tests and solutions will be added here.</p>`}
+function closeModal(){modal.style.display="none"}
+function setTarget(){localStorage.setItem("targetDone","1");alert("🎉 Today's target marked as done!")}
+let seconds=1500, interval=null;
+function drawTime(){let m=Math.floor(seconds/60),s=seconds%60;time.textContent=String(m).padStart(2,"0")+":"+String(s).padStart(2,"0")}
+function startTimer(){if(interval)return;interval=setInterval(()=>{if(seconds>0){seconds--;drawTime()}else{clearInterval(interval);interval=null;alert("⏰ Session complete! Take a short break.")}},1000)}
+function pauseTimer(){clearInterval(interval);interval=null}
+function resetTimer(){pauseTimer();seconds=1500;drawTime()}
+const subjectsEl=document.getElementById("subjects"),mathsEl=document.getElementById("maths"),overallBar=document.getElementById("overallBar"),overallText=document.getElementById("overallText"),time=document.getElementById("time"),search=document.getElementById("search"),modal=document.getElementById("modal"),modalContent=document.getElementById("modalContent");
+render();drawTime();
+</script>
+
+<div id="pwaInstallBar" style="display:none;position:fixed;left:12px;right:12px;bottom:12px;z-index:9999;padding:12px 14px;border-radius:16px;background:#111827;color:#fff;box-shadow:0 8px 30px rgba(0,0,0,.25);align-items:center;justify-content:space-between;gap:12px;font-family:system-ui,sans-serif">
+  <div><b>📱 Install Study Hub</b><div style="font-size:12px;opacity:.8">Home screen par app jaisa use karein</div></div>
+  <button id="pwaInstallBtn" style="border:0;border-radius:10px;padding:10px 14px;font-weight:700;background:#fff;color:#111827">Install</button>
+</div>
+<script>
+(function(){
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function(){ navigator.serviceWorker.register("./sw.js").catch(function(){}); });
+  }
+  let deferredPrompt = null;
+  const bar = document.getElementById("pwaInstallBar");
+  const btn = document.getElementById("pwaInstallBtn");
+  window.addEventListener("beforeinstallprompt", function(e){
+    e.preventDefault(); deferredPrompt = e;
+    if (bar) bar.style.display = "flex";
+  });
+  if (btn) btn.addEventListener("click", async function(){
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    try { await deferredPrompt.userChoice; } catch(e) {}
+    deferredPrompt = null;
+    if (bar) bar.style.display = "none";
+  });
+  window.addEventListener("appinstalled", function(){
+    if (bar) bar.style.display = "none";
+  });
+})();
+</script>
+
+</body>
+</html>
